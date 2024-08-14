@@ -8,6 +8,7 @@ import (
 	"maps"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 type Request interface {
@@ -100,23 +101,37 @@ type Request interface {
 	WithQueries(
 		values map[string][]string,
 	) Request
+
+	WithTimeout(
+		timeout time.Duration,
+	) Request
 }
 
 type request struct {
-	req    *http.Request
-	client *client
-	header http.Header
-	query  url.Values
+	req     *http.Request
+	client  *client
+	header  http.Header
+	query   url.Values
+	timeout time.Duration
 }
 
 func (r *request) do(
 	ctx context.Context,
+	method string,
 	url string,
 	body io.Reader,
 ) (resp *Response, err error) {
+	timeout := r.timeout
+	if timeout == 0 {
+		timeout = r.client.timeout
+	}
+
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
 	req, _ := http.NewRequestWithContext(
-		ctx,
-		http.MethodGet,
+		ctxWithTimeout,
+		method,
 		url,
 		body,
 	)
@@ -141,6 +156,7 @@ func (r *request) Get(
 ) (resp *Response, err error) {
 	return r.do(
 		ctx,
+		http.MethodGet,
 		url,
 		nil,
 	)
@@ -153,6 +169,7 @@ func (r *request) Head(
 ) (resp *Response, err error) {
 	return r.do(
 		ctx,
+		http.MethodHead,
 		url,
 		nil,
 	)
@@ -166,6 +183,7 @@ func (r *request) Post(
 ) (resp *Response, err error) {
 	return r.do(
 		ctx,
+		http.MethodPost,
 		url,
 		body,
 	)
@@ -179,6 +197,7 @@ func (r *request) Put(
 ) (resp *Response, err error) {
 	return r.do(
 		ctx,
+		http.MethodPut,
 		url,
 		body,
 	)
@@ -191,6 +210,7 @@ func (r *request) Delete(
 ) (resp *Response, err error) {
 	return r.do(
 		ctx,
+		http.MethodDelete,
 		url,
 		nil,
 	)
@@ -203,6 +223,7 @@ func (r *request) Connect(
 ) (resp *Response, err error) {
 	return r.do(
 		ctx,
+		http.MethodConnect,
 		url,
 		nil,
 	)
@@ -215,6 +236,7 @@ func (r *request) Options(
 ) (resp *Response, err error) {
 	return r.do(
 		ctx,
+		http.MethodOptions,
 		url,
 		nil,
 	)
@@ -227,6 +249,7 @@ func (r *request) Trace(
 ) (resp *Response, err error) {
 	return r.do(
 		ctx,
+		http.MethodTrace,
 		url,
 		nil,
 	)
@@ -239,6 +262,7 @@ func (r *request) Patch(
 ) (resp *Response, err error) {
 	return r.do(
 		ctx,
+		http.MethodPatch,
 		url,
 		nil,
 	)
@@ -390,6 +414,15 @@ func (r *request) WithQueries(
 ) Request {
 	query := url.Values(values)
 	maps.Copy(r.query, query)
+
+	return r
+
+}
+
+func (r *request) WithTimeout(
+	timeout time.Duration,
+) Request {
+	r.timeout = timeout
 
 	return r
 
