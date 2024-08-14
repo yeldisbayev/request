@@ -5,56 +5,58 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"maps"
 	"net/http"
+	"net/url"
 )
 
 type Request interface {
 	Get(
 		ctx context.Context,
 		url string,
-	) (resp *http.Response, err error)
+	) (resp *Response, err error)
 
 	Head(
 		ctx context.Context,
 		url string,
-	) (resp *http.Response, err error)
+	) (resp *Response, err error)
 
 	Post(
 		ctx context.Context,
 		url string,
 		body io.Reader,
-	) (resp *http.Response, err error)
+	) (resp *Response, err error)
 
 	Put(
 		ctx context.Context,
 		url string,
 		body io.Reader,
-	) (resp *http.Response, err error)
+	) (resp *Response, err error)
 
 	Delete(
 		ctx context.Context,
 		url string,
-	) (resp *http.Response, err error)
+	) (resp *Response, err error)
 
 	Connect(
 		ctx context.Context,
 		url string,
-	) (resp *http.Response, err error)
+	) (resp *Response, err error)
 
 	Options(
 		ctx context.Context,
 		url string,
-	) (resp *http.Response, err error)
+	) (resp *Response, err error)
 
 	Trace(
 		ctx context.Context,
 		url string,
-	) (resp *http.Response, err error)
+	) (resp *Response, err error)
 
 	Patch(
 		ctx context.Context,
 		url string,
-	) (resp *http.Response, err error)
+	) (resp *Response, err error)
 
 	WithHeader(
 		key string,
@@ -71,7 +73,7 @@ type Request interface {
 
 	WithMultipartFormDataContentType() Request
 
-	WithFormURLContentType() Request
+	WithFormURLEncodedContentType() Request
 
 	WithAuthorization(
 		values ...string,
@@ -89,45 +91,71 @@ type Request interface {
 	WithJWTAuthorization(
 		value string,
 	) Request
+
+	WithQuery(
+		name string,
+		values ...any,
+	) Request
+
+	WithQueries(
+		values map[string][]string,
+	) Request
 }
 
 type request struct {
 	req    *http.Request
 	client *client
 	header http.Header
+	query  url.Values
+}
+
+func (r *request) do(
+	ctx context.Context,
+	url string,
+	body io.Reader,
+) (resp *Response, err error) {
+	req, _ := http.NewRequestWithContext(
+		ctx,
+		http.MethodGet,
+		url,
+		body,
+	)
+
+	req.Header = r.header
+	req.URL.RawQuery = r.query.Encode()
+
+	res, err := r.client.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Response{
+		Response: res,
+	}, err
+
 }
 
 func (r *request) Get(
 	ctx context.Context,
 	url string,
-) (resp *http.Response, err error) {
-	req, _ := http.NewRequestWithContext(
+) (resp *Response, err error) {
+	return r.do(
 		ctx,
-		http.MethodGet,
 		url,
 		nil,
 	)
-
-	req.Header = r.header
-
-	return r.client.httpClient.Do(req)
 
 }
 
 func (r *request) Head(
 	ctx context.Context,
 	url string,
-) (resp *http.Response, err error) {
-	req, _ := http.NewRequestWithContext(
+) (resp *Response, err error) {
+	return r.do(
 		ctx,
-		http.MethodHead,
 		url,
 		nil,
 	)
-
-	req.Header = r.header
-
-	return r.client.httpClient.Do(req)
 
 }
 
@@ -135,17 +163,12 @@ func (r *request) Post(
 	ctx context.Context,
 	url string,
 	body io.Reader,
-) (resp *http.Response, err error) {
-	req, _ := http.NewRequestWithContext(
+) (resp *Response, err error) {
+	return r.do(
 		ctx,
-		http.MethodPost,
 		url,
 		body,
 	)
-
-	req.Header = r.header
-
-	return r.client.httpClient.Do(req)
 
 }
 
@@ -153,102 +176,72 @@ func (r *request) Put(
 	ctx context.Context,
 	url string,
 	body io.Reader,
-) (resp *http.Response, err error) {
-	req, _ := http.NewRequestWithContext(
+) (resp *Response, err error) {
+	return r.do(
 		ctx,
-		http.MethodPut,
 		url,
 		body,
 	)
-
-	req.Header = r.header
-
-	return r.client.httpClient.Do(req)
 
 }
 
 func (r *request) Delete(
 	ctx context.Context,
 	url string,
-) (resp *http.Response, err error) {
-	req, _ := http.NewRequestWithContext(
+) (resp *Response, err error) {
+	return r.do(
 		ctx,
-		http.MethodPost,
 		url,
 		nil,
 	)
-
-	req.Header = r.header
-
-	return r.client.httpClient.Do(req)
 
 }
 
 func (r *request) Connect(
 	ctx context.Context,
 	url string,
-) (resp *http.Response, err error) {
-	req, _ := http.NewRequestWithContext(
+) (resp *Response, err error) {
+	return r.do(
 		ctx,
-		http.MethodConnect,
 		url,
 		nil,
 	)
-
-	req.Header = r.header
-
-	return r.client.httpClient.Do(req)
 
 }
 
 func (r *request) Options(
 	ctx context.Context,
 	url string,
-) (resp *http.Response, err error) {
-	req, _ := http.NewRequestWithContext(
+) (resp *Response, err error) {
+	return r.do(
 		ctx,
-		http.MethodOptions,
 		url,
 		nil,
 	)
-
-	req.Header = r.header
-
-	return r.client.httpClient.Do(req)
 
 }
 
 func (r *request) Trace(
 	ctx context.Context,
 	url string,
-) (resp *http.Response, err error) {
-	req, _ := http.NewRequestWithContext(
+) (resp *Response, err error) {
+	return r.do(
 		ctx,
-		http.MethodTrace,
 		url,
 		nil,
 	)
-
-	req.Header = r.header
-
-	return r.client.httpClient.Do(req)
 
 }
 
 func (r *request) Patch(
 	ctx context.Context,
 	url string,
-) (resp *http.Response, err error) {
-	req, _ := http.NewRequestWithContext(
+) (resp *Response, err error) {
+	return r.do(
 		ctx,
-		http.MethodPatch,
 		url,
 		nil,
 	)
-
-	req.Header = r.header
-
-	return r.client.httpClient.Do(req)
 
 }
 
@@ -317,7 +310,7 @@ func (r *request) WithMultipartFormDataContentType() Request {
 
 }
 
-func (r *request) WithFormURLContentType() Request {
+func (r *request) WithFormURLEncodedContentType() Request {
 	r.header.Set(
 		"Content-Type",
 		"application/x-www-form-urlencoded",
@@ -347,7 +340,7 @@ func (r *request) WithBasicAuthorization(
 func (r *request) WithBearerAuthorization(
 	value string,
 ) Request {
-	r.header.Set(
+	r.header.Add(
 		"Authorization",
 		fmt.Sprintf(
 			"Bearer %s",
@@ -362,13 +355,41 @@ func (r *request) WithBearerAuthorization(
 func (r *request) WithJWTAuthorization(
 	value string,
 ) Request {
-	r.header.Set(
+	r.header.Add(
 		"Authorization",
 		fmt.Sprintf(
 			"JWT %s",
 			value,
 		),
 	)
+
+	return r
+
+}
+
+func (r *request) WithQuery(
+	name string,
+	values ...any,
+) Request {
+	for _, value := range values {
+		r.query.Add(
+			name,
+			fmt.Sprintf(
+				"%v",
+				value,
+			),
+		)
+	}
+
+	return r
+
+}
+
+func (r *request) WithQueries(
+	values map[string][]string,
+) Request {
+	query := url.Values(values)
+	maps.Copy(r.query, query)
 
 	return r
 

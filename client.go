@@ -1,6 +1,9 @@
 package req
 
-import "net/http"
+import (
+	"net/http"
+	"net/url"
+)
 
 type Client interface {
 	Request() Request
@@ -21,8 +24,9 @@ func NewClient(
 
 func (c *client) Request() Request {
 	return &request{
-		header: make(http.Header),
 		client: c,
+		header: make(http.Header),
+		query:  make(url.Values),
 	}
 
 }
