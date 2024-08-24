@@ -11,6 +11,16 @@ import (
 	"time"
 )
 
+const (
+	ContentType                  = "Content-Type"
+	ContentTypeApplicationJSON   = "application/json"
+	ContentTypeApplicationXML    = "application/xml"
+	ContentTypeMultipartFormData = "multipart/form-data"
+	ContentTypeFormUrlencoded    = "application/x-www-form-urlencoded"
+
+	Authorization = "Authorization"
+)
+
 type Request interface {
 	Get(
 		ctx context.Context,
@@ -126,7 +136,10 @@ func (r *request) do(
 		timeout = r.client.timeout
 	}
 
-	ctxWithTimeout, cancel := context.WithTimeout(ctx, timeout)
+	ctxWithTimeout, cancel := context.WithTimeout(
+		ctx,
+		timeout,
+	)
 	defer cancel()
 
 	req, _ := http.NewRequestWithContext(
@@ -296,7 +309,7 @@ func (r *request) WithContentType(
 	value string,
 ) Request {
 	r.header.Set(
-		"Content-Type",
+		ContentType,
 		value,
 	)
 
@@ -306,8 +319,8 @@ func (r *request) WithContentType(
 
 func (r *request) WithJSONContentType() Request {
 	r.header.Set(
-		"Content-Type",
-		"application/json",
+		ContentType,
+		ContentTypeApplicationJSON,
 	)
 
 	return r
@@ -316,8 +329,8 @@ func (r *request) WithJSONContentType() Request {
 
 func (r *request) WithXMLContentType() Request {
 	r.header.Set(
-		"Content-Type",
-		"application/xml",
+		ContentType,
+		ContentTypeApplicationXML,
 	)
 
 	return r
@@ -326,8 +339,8 @@ func (r *request) WithXMLContentType() Request {
 
 func (r *request) WithMultipartFormDataContentType() Request {
 	r.header.Set(
-		"Content-Type",
-		"multipart/form-data",
+		ContentType,
+		ContentTypeMultipartFormData,
 	)
 
 	return r
@@ -336,8 +349,8 @@ func (r *request) WithMultipartFormDataContentType() Request {
 
 func (r *request) WithFormURLEncodedContentType() Request {
 	r.header.Set(
-		"Content-Type",
-		"application/x-www-form-urlencoded",
+		ContentType,
+		ContentTypeFormUrlencoded,
 	)
 
 	return r
@@ -355,7 +368,7 @@ func (r *request) WithBasicAuthorization(
 		),
 	)
 
-	r.header.Add("Authorization", auth)
+	r.header.Add(Authorization, auth)
 
 	return r
 
@@ -365,7 +378,7 @@ func (r *request) WithBearerAuthorization(
 	value string,
 ) Request {
 	r.header.Add(
-		"Authorization",
+		Authorization,
 		fmt.Sprintf(
 			"Bearer %s",
 			value,
@@ -380,7 +393,7 @@ func (r *request) WithJWTAuthorization(
 	value string,
 ) Request {
 	r.header.Add(
-		"Authorization",
+		Authorization,
 		fmt.Sprintf(
 			"JWT %s",
 			value,
