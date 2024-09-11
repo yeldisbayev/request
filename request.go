@@ -329,7 +329,7 @@ func (r *request) WithHeader(
 	values ...string,
 ) Request {
 	for _, value := range values {
-		r.req.Header.Add(key, value)
+		r.header.Add(key, value)
 	}
 
 	return r
@@ -348,7 +348,7 @@ func (r *request) WithAuth(
 	values ...string,
 ) Request {
 	for _, value := range values {
-		r.req.Header.Add("Authorization", value)
+		r.header.Add(Authorization, value)
 	}
 
 	return r
