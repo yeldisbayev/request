@@ -69,6 +69,12 @@ type Request interface {
 		url string,
 	) (resp *Response, err error)
 
+	URL() *url.URL
+
+	Header() http.Header
+
+	Body() io.Reader
+
 	WithHeader(
 		key string,
 		values ...string,
@@ -279,6 +285,32 @@ func (r *request) Patch(
 		url,
 		nil,
 	)
+
+}
+
+func (r *request) URL() *url.URL {
+	if r.req != nil {
+		return r.req.URL
+	}
+
+	return nil
+}
+
+func (r *request) Header() http.Header {
+	if r.req != nil {
+		return r.req.Header
+	}
+
+	return r.header
+
+}
+
+func (r *request) Body() io.Reader {
+	if r.req != nil {
+		return r.req.Body
+	}
+
+	return nil
 
 }
 
