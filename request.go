@@ -478,8 +478,7 @@ func (r *request) WithQuery(
 func (r *request) WithQueries(
 	values map[string][]string,
 ) Request {
-	query := url.Values(values)
-	maps.Copy(r.query, query)
+	maps.Copy(r.query, values)
 
 	return r
 
