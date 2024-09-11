@@ -19,6 +19,9 @@ const (
 	ContentTypeFormUrlencoded    = "application/x-www-form-urlencoded"
 
 	Authorization = "Authorization"
+	Basic         = "Basic"
+	Bearer        = "Bearer"
+	JWT           = "JWT"
 )
 
 type Request interface {
@@ -80,6 +83,10 @@ type Request interface {
 		values ...string,
 	) Request
 
+	WithHeaders(
+		values map[string][]string,
+	) Request
+
 	WithContentType(
 		value string,
 	) Request
@@ -92,20 +99,20 @@ type Request interface {
 
 	WithFormURLEncodedContentType() Request
 
-	WithAuthorization(
+	WithAuth(
 		values ...string,
 	) Request
 
-	WithBasicAuthorization(
+	WithBasicAuth(
 		username,
 		password string,
 	) Request
 
-	WithBearerAuthorization(
+	WithBearerAuth(
 		value string,
 	) Request
 
-	WithJWTAuthorization(
+	WithJWTAuth(
 		value string,
 	) Request
 
@@ -326,7 +333,15 @@ func (r *request) WithHeader(
 
 }
 
-func (r *request) WithAuthorization(
+func (r *request) WithHeaders(
+	values map[string][]string,
+) Request {
+	maps.Copy(r.header, values)
+	return r
+
+}
+
+func (r *request) WithAuth(
 	values ...string,
 ) Request {
 	for _, value := range values {
@@ -389,12 +404,13 @@ func (r *request) WithFormURLEncodedContentType() Request {
 
 }
 
-func (r *request) WithBasicAuthorization(
+func (r *request) WithBasicAuth(
 	username,
 	password string,
 ) Request {
 	auth := fmt.Sprintf(
-		"Basic %s",
+		"%s %s",
+		Basic,
 		base64.StdEncoding.EncodeToString(
 			[]byte(username+":"+password),
 		),
@@ -406,13 +422,14 @@ func (r *request) WithBasicAuthorization(
 
 }
 
-func (r *request) WithBearerAuthorization(
+func (r *request) WithBearerAuth(
 	value string,
 ) Request {
 	r.header.Add(
 		Authorization,
 		fmt.Sprintf(
-			"Bearer %s",
+			"%s %s",
+			Bearer,
 			value,
 		),
 	)
@@ -421,13 +438,14 @@ func (r *request) WithBearerAuthorization(
 
 }
 
-func (r *request) WithJWTAuthorization(
+func (r *request) WithJWTAuth(
 	value string,
 ) Request {
 	r.header.Add(
 		Authorization,
 		fmt.Sprintf(
-			"JWT %s",
+			"%s %s",
+			JWT,
 			value,
 		),
 	)
