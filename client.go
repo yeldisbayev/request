@@ -17,6 +17,10 @@ const (
 
 type Client interface {
 	Request() Request
+
+	WithInterceptors(
+		interceptors ...Interceptor,
+	) Client
 }
 
 type client struct {
@@ -67,6 +71,17 @@ func (c *client) Request() Request {
 		header: make(http.Header),
 		query:  make(url.Values),
 	}
+
+}
+
+func (c *client) WithInterceptors(interceptors ...Interceptor) Client {
+	for _, interceptor := range interceptors {
+		c.httpClient.Transport = interceptor(
+			c.httpClient.Transport,
+		)
+	}
+
+	return c
 
 }
 
