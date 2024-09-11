@@ -32,10 +32,13 @@ type client struct {
 func NewClient(
 	options ...func(*client),
 ) Client {
-	httpClient := http.DefaultClient
+	httpClient := &http.Client{
+		Transport: http.DefaultTransport,
+	}
 	transport := httpClient.Transport.(*http.Transport)
 
 	client := &client{
+		httpClient:                httpClient,
 		timeout:                   DefaultTimeout,
 		idleConnectionTimeout:     DefaultIdleConnectionTimeout,
 		maxIdleConnections:        DefaultMaxIdleConnections,
