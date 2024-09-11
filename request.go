@@ -12,11 +12,11 @@ import (
 )
 
 const (
-	ContentType                  = "Content-Type"
-	ContentTypeApplicationJSON   = "application/json"
-	ContentTypeApplicationXML    = "application/xml"
-	ContentTypeMultipartFormData = "multipart/form-data"
-	ContentTypeFormUrlencoded    = "application/x-www-form-urlencoded"
+	ContentType               = "Content-Type"
+	ApplicationJSON           = "application/json"
+	ApplicationXML            = "application/xml"
+	ApplicationFormUrlencoded = "application/x-www-form-urlencoded"
+	MultipartFormData         = "multipart/form-data"
 
 	Authorization = "Authorization"
 	Basic         = "Basic"
@@ -370,7 +370,7 @@ func (r *request) WithContentType(
 func (r *request) WithJSONContentType() Request {
 	r.header.Set(
 		ContentType,
-		ContentTypeApplicationJSON,
+		ApplicationJSON,
 	)
 
 	return r
@@ -380,7 +380,7 @@ func (r *request) WithJSONContentType() Request {
 func (r *request) WithXMLContentType() Request {
 	r.header.Set(
 		ContentType,
-		ContentTypeApplicationXML,
+		ApplicationXML,
 	)
 
 	return r
@@ -390,7 +390,7 @@ func (r *request) WithXMLContentType() Request {
 func (r *request) WithMultipartFormDataContentType() Request {
 	r.header.Set(
 		ContentType,
-		ContentTypeMultipartFormData,
+		MultipartFormData,
 	)
 
 	return r
@@ -400,7 +400,7 @@ func (r *request) WithMultipartFormDataContentType() Request {
 func (r *request) WithFormURLEncodedContentType() Request {
 	r.header.Set(
 		ContentType,
-		ContentTypeFormUrlencoded,
+		ApplicationFormUrlencoded,
 	)
 
 	return r
