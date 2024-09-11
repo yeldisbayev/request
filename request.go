@@ -155,12 +155,15 @@ func (r *request) do(
 	)
 	defer cancel()
 
-	req, _ := http.NewRequestWithContext(
+	req, err := http.NewRequestWithContext(
 		ctxWithTimeout,
 		method,
 		url,
 		body,
 	)
+	if err != nil {
+		return nil, err
+	}
 
 	req.Header = r.header
 	req.URL.RawQuery = r.query.Encode()
