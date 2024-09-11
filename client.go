@@ -12,7 +12,7 @@ const (
 	DefaultMaxIdleConnections        = 100
 	DefaultMaxConnectionsPerHost     = 15
 	DefaultMaxIdleConnectionsPerHost = 10
-	DefaultForceAttemptHTTP2         = false
+	DefaultForceAttemptHTTP2         = true
 )
 
 type Client interface {
