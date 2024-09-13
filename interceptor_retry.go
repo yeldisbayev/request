@@ -38,10 +38,12 @@ func Retry(retryOnStatusCodes ...int) Interceptor {
 				defer func() {
 					retries := 0
 					for shouldRetry(res, err, statusCodes) && retries < maxRetries {
-						sleepWithContext(
-							req.Context(),
-							delay(retries),
-						)
+						if retries != 0 {
+							sleepWithContext(
+								req.Context(),
+								delay(retries),
+							)
+						}
 						drainBody(res)
 
 						if req.Body != nil {
