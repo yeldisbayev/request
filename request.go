@@ -13,8 +13,8 @@ import (
 
 const (
 	ContentType               = "Content-Type"
-	ApplicationJSON           = "application/json"
-	ApplicationXML            = "application/xml"
+	ApplicationJSON           = "application/json; charset=utf-8"
+	ApplicationXML            = "application/xml; charset=utf-8"
 	ApplicationFormUrlencoded = "application/x-www-form-urlencoded"
 	MultipartFormData         = "multipart/form-data"
 
@@ -95,9 +95,9 @@ type Request interface {
 
 	WithXMLContentType() Request
 
-	WithMultipartFormDataContentType() Request
+	WithMultipartFormContentType() Request
 
-	WithFormURLEncodedContentType() Request
+	WithFormContentType() Request
 
 	WithAuth(
 		values ...string,
@@ -131,7 +131,7 @@ type Request interface {
 }
 
 type request struct {
-	req     *http.Request
+	httpReq *http.Request
 	client  *client
 	header  http.Header
 	query   url.Values
@@ -299,16 +299,16 @@ func (r *request) Patch(
 }
 
 func (r *request) URL() *url.URL {
-	if r.req != nil {
-		return r.req.URL
+	if r.httpReq != nil {
+		return r.httpReq.URL
 	}
 
 	return nil
 }
 
 func (r *request) Header() http.Header {
-	if r.req != nil {
-		return r.req.Header
+	if r.httpReq != nil {
+		return r.httpReq.Header
 	}
 
 	return r.header
@@ -316,8 +316,8 @@ func (r *request) Header() http.Header {
 }
 
 func (r *request) Body() io.Reader {
-	if r.req != nil {
-		return r.req.Body
+	if r.httpReq != nil {
+		return r.httpReq.Body
 	}
 
 	return nil
@@ -340,16 +340,6 @@ func (r *request) WithHeaders(
 	values map[string][]string,
 ) Request {
 	maps.Copy(r.header, values)
-	return r
-
-}
-
-func (r *request) WithAuth(
-	values ...string,
-) Request {
-	for _, value := range values {
-		r.header.Add(Authorization, value)
-	}
 
 	return r
 
@@ -387,7 +377,17 @@ func (r *request) WithXMLContentType() Request {
 
 }
 
-func (r *request) WithMultipartFormDataContentType() Request {
+func (r *request) WithFormContentType() Request {
+	r.header.Set(
+		ContentType,
+		ApplicationFormUrlencoded,
+	)
+
+	return r
+
+}
+
+func (r *request) WithMultipartFormContentType() Request {
 	r.header.Set(
 		ContentType,
 		MultipartFormData,
@@ -397,11 +397,12 @@ func (r *request) WithMultipartFormDataContentType() Request {
 
 }
 
-func (r *request) WithFormURLEncodedContentType() Request {
-	r.header.Set(
-		ContentType,
-		ApplicationFormUrlencoded,
-	)
+func (r *request) WithAuth(
+	values ...string,
+) Request {
+	for _, value := range values {
+		r.header.Add(Authorization, value)
+	}
 
 	return r
 

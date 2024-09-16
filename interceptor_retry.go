@@ -44,6 +44,7 @@ func Retry(retryOnStatusCodes ...int) Interceptor {
 								delay(retries),
 							)
 						}
+
 						drainBody(res)
 
 						if req.Body != nil {
@@ -82,6 +83,7 @@ func shouldRetry(res *http.Response, err error, statusCodes []int) bool {
 
 func sleepWithContext(ctx context.Context, d time.Duration) {
 	timer := time.NewTimer(d)
+
 	select {
 	case <-ctx.Done():
 		if !timer.Stop() {
@@ -89,6 +91,7 @@ func sleepWithContext(ctx context.Context, d time.Duration) {
 		}
 	case <-timer.C:
 	}
+
 }
 
 func drainBody(res *http.Response) {
@@ -96,4 +99,5 @@ func drainBody(res *http.Response) {
 		_, _ = io.Copy(io.Discard, res.Body)
 		_ = res.Body.Close()
 	}
+
 }
