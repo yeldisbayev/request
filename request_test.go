@@ -2,6 +2,7 @@ package req
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"fmt"
 	"github.com/stretchr/testify/assert"
@@ -11,6 +12,846 @@ import (
 	"testing"
 	"time"
 )
+
+func TestRequest_Do(t *testing.T) {
+	type args struct {
+		ctx    context.Context
+		method string
+		url    string
+		body   io.Reader
+	}
+
+	type want struct {
+		res *Response
+		err error
+	}
+
+	type depends struct {
+		client *client
+		header http.Header
+		query  url.Values
+	}
+
+	type test struct {
+		name    string
+		args    args
+		want    want
+		depends depends
+	}
+
+	tests := []test{
+		{
+			name: "Request error",
+			args: args{
+				ctx:    context.Background(),
+				method: "Invalid method",
+				url:    "http://localhost:8080",
+			},
+			want: want{
+				err: fmt.Errorf("net/http: invalid method %q", "Invalid method"),
+			},
+			depends: depends{
+				client: &client{},
+				header: make(http.Header),
+				query:  make(url.Values),
+			},
+		},
+		{
+			name: "Round trip error",
+			args: args{
+				ctx:    context.Background(),
+				method: http.MethodGet,
+				url:    "http://localhost:8080",
+			},
+			want: want{
+				err: &url.Error{
+					Op:  "Get",
+					URL: "http://localhost:8080",
+					Err: context.DeadlineExceeded,
+				},
+			},
+			depends: depends{
+				client: &client{
+					httpClient: &http.Client{
+						Transport: RoundTripper(
+							func(req *http.Request) (*http.Response, error) {
+								return nil, context.DeadlineExceeded
+							},
+						),
+					},
+				},
+				header: make(http.Header),
+				query:  make(url.Values),
+			},
+		},
+		{
+			name: "Success response",
+			args: args{
+				ctx:    context.Background(),
+				method: http.MethodGet,
+				url:    "http://localhost:8080",
+			},
+			want: want{
+				res: &Response{
+					Response: &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       io.NopCloser(bytes.NewReader([]byte("OK"))),
+					},
+				},
+			},
+			depends: depends{
+				client: &client{
+					httpClient: &http.Client{
+						Transport: RoundTripper(
+							func(req *http.Request) (*http.Response, error) {
+								return &http.Response{
+									StatusCode: http.StatusOK,
+									Body:       io.NopCloser(bytes.NewReader([]byte("OK"))),
+								}, nil
+							},
+						),
+					},
+				},
+				header: make(http.Header),
+				query:  make(url.Values),
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			r := request{
+				client: tc.depends.client,
+				header: tc.depends.header,
+				query:  tc.depends.query,
+			}
+
+			res, err := r.do(
+				tc.args.ctx,
+				tc.args.method,
+				tc.args.url,
+				tc.args.body,
+			)
+
+			assert.Equal(t, tc.want.res, res)
+			assert.Equal(t, tc.want.err, err)
+
+		})
+	}
+}
+
+func TestRequest_Get(t *testing.T) {
+	type args struct {
+		ctx context.Context
+		url string
+	}
+
+	type want struct {
+		res *Response
+		err error
+	}
+
+	type depends struct {
+		client *client
+		header http.Header
+		query  url.Values
+	}
+
+	type test struct {
+		name    string
+		args    args
+		want    want
+		depends depends
+	}
+
+	tests := []test{
+		{
+			name: "Success response",
+			args: args{
+				ctx: context.Background(),
+				url: "http://localhost:8080",
+			},
+			want: want{
+				res: &Response{
+					Response: &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       io.NopCloser(bytes.NewReader([]byte("OK"))),
+					},
+				},
+			},
+			depends: depends{
+				client: &client{
+					httpClient: &http.Client{
+						Transport: RoundTripper(
+							func(req *http.Request) (*http.Response, error) {
+								return &http.Response{
+									StatusCode: http.StatusOK,
+									Body:       io.NopCloser(bytes.NewReader([]byte("OK"))),
+								}, nil
+							},
+						),
+					},
+				},
+				header: make(http.Header),
+				query:  make(url.Values),
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			r := request{
+				client: tc.depends.client,
+				header: tc.depends.header,
+				query:  tc.depends.query,
+			}
+
+			res, err := r.Get(
+				tc.args.ctx,
+				tc.args.url,
+			)
+
+			assert.Equal(t, tc.want.res, res)
+			assert.Equal(t, tc.want.err, err)
+
+		})
+	}
+
+}
+
+func TestRequest_Head(t *testing.T) {
+	type args struct {
+		ctx context.Context
+		url string
+	}
+
+	type want struct {
+		res *Response
+		err error
+	}
+
+	type depends struct {
+		client *client
+		header http.Header
+		query  url.Values
+	}
+
+	type test struct {
+		name    string
+		args    args
+		want    want
+		depends depends
+	}
+
+	tests := []test{
+		{
+			name: "Success response",
+			args: args{
+				ctx: context.Background(),
+				url: "http://localhost:8080",
+			},
+			want: want{
+				res: &Response{
+					Response: &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       io.NopCloser(bytes.NewReader([]byte("OK"))),
+					},
+				},
+			},
+			depends: depends{
+				client: &client{
+					httpClient: &http.Client{
+						Transport: RoundTripper(
+							func(req *http.Request) (*http.Response, error) {
+								return &http.Response{
+									StatusCode: http.StatusOK,
+									Body:       io.NopCloser(bytes.NewReader([]byte("OK"))),
+								}, nil
+							},
+						),
+					},
+				},
+				header: make(http.Header),
+				query:  make(url.Values),
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			r := request{
+				client: tc.depends.client,
+				header: tc.depends.header,
+				query:  tc.depends.query,
+			}
+
+			res, err := r.Head(
+				tc.args.ctx,
+				tc.args.url,
+			)
+
+			assert.Equal(t, tc.want.res, res)
+			assert.Equal(t, tc.want.err, err)
+
+		})
+	}
+
+}
+
+func TestRequest_Post(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		url  string
+		body io.Reader
+	}
+
+	type want struct {
+		res *Response
+		err error
+	}
+
+	type depends struct {
+		client *client
+		header http.Header
+		query  url.Values
+	}
+
+	type test struct {
+		name    string
+		args    args
+		want    want
+		depends depends
+	}
+
+	tests := []test{
+		{
+			name: "Success response",
+			args: args{
+				ctx: context.Background(),
+				url: "http://localhost:8080",
+			},
+			want: want{
+				res: &Response{
+					Response: &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       io.NopCloser(bytes.NewReader([]byte("OK"))),
+					},
+				},
+			},
+			depends: depends{
+				client: &client{
+					httpClient: &http.Client{
+						Transport: RoundTripper(
+							func(req *http.Request) (*http.Response, error) {
+								return &http.Response{
+									StatusCode: http.StatusOK,
+									Body:       io.NopCloser(bytes.NewReader([]byte("OK"))),
+								}, nil
+							},
+						),
+					},
+				},
+				header: make(http.Header),
+				query:  make(url.Values),
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			r := request{
+				client: tc.depends.client,
+				header: tc.depends.header,
+				query:  tc.depends.query,
+			}
+
+			res, err := r.Post(
+				tc.args.ctx,
+				tc.args.url,
+				tc.args.body,
+			)
+
+			assert.Equal(t, tc.want.res, res)
+			assert.Equal(t, tc.want.err, err)
+
+		})
+	}
+
+}
+
+func TestRequest_Put(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		url  string
+		body io.Reader
+	}
+
+	type want struct {
+		res *Response
+		err error
+	}
+
+	type depends struct {
+		client *client
+		header http.Header
+		query  url.Values
+	}
+
+	type test struct {
+		name    string
+		args    args
+		want    want
+		depends depends
+	}
+
+	tests := []test{
+		{
+			name: "Success response",
+			args: args{
+				ctx: context.Background(),
+				url: "http://localhost:8080",
+			},
+			want: want{
+				res: &Response{
+					Response: &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       io.NopCloser(bytes.NewReader([]byte("OK"))),
+					},
+				},
+			},
+			depends: depends{
+				client: &client{
+					httpClient: &http.Client{
+						Transport: RoundTripper(
+							func(req *http.Request) (*http.Response, error) {
+								return &http.Response{
+									StatusCode: http.StatusOK,
+									Body:       io.NopCloser(bytes.NewReader([]byte("OK"))),
+								}, nil
+							},
+						),
+					},
+				},
+				header: make(http.Header),
+				query:  make(url.Values),
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			r := request{
+				client: tc.depends.client,
+				header: tc.depends.header,
+				query:  tc.depends.query,
+			}
+
+			res, err := r.Put(
+				tc.args.ctx,
+				tc.args.url,
+				tc.args.body,
+			)
+
+			assert.Equal(t, tc.want.res, res)
+			assert.Equal(t, tc.want.err, err)
+
+		})
+	}
+
+}
+
+func TestRequest_Delete(t *testing.T) {
+	type args struct {
+		ctx context.Context
+		url string
+	}
+
+	type want struct {
+		res *Response
+		err error
+	}
+
+	type depends struct {
+		client *client
+		header http.Header
+		query  url.Values
+	}
+
+	type test struct {
+		name    string
+		args    args
+		want    want
+		depends depends
+	}
+
+	tests := []test{
+		{
+			name: "Success response",
+			args: args{
+				ctx: context.Background(),
+				url: "http://localhost:8080",
+			},
+			want: want{
+				res: &Response{
+					Response: &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       io.NopCloser(bytes.NewReader([]byte("OK"))),
+					},
+				},
+			},
+			depends: depends{
+				client: &client{
+					httpClient: &http.Client{
+						Transport: RoundTripper(
+							func(req *http.Request) (*http.Response, error) {
+								return &http.Response{
+									StatusCode: http.StatusOK,
+									Body:       io.NopCloser(bytes.NewReader([]byte("OK"))),
+								}, nil
+							},
+						),
+					},
+				},
+				header: make(http.Header),
+				query:  make(url.Values),
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			r := request{
+				client: tc.depends.client,
+				header: tc.depends.header,
+				query:  tc.depends.query,
+			}
+
+			res, err := r.Delete(
+				tc.args.ctx,
+				tc.args.url,
+			)
+
+			assert.Equal(t, tc.want.res, res)
+			assert.Equal(t, tc.want.err, err)
+
+		})
+	}
+}
+
+func TestRequest_Connect(t *testing.T) {
+	type args struct {
+		ctx context.Context
+		url string
+	}
+
+	type want struct {
+		res *Response
+		err error
+	}
+
+	type depends struct {
+		client *client
+		header http.Header
+		query  url.Values
+	}
+
+	type test struct {
+		name    string
+		args    args
+		want    want
+		depends depends
+	}
+
+	tests := []test{
+		{
+			name: "Success response",
+			args: args{
+				ctx: context.Background(),
+				url: "http://localhost:8080",
+			},
+			want: want{
+				res: &Response{
+					Response: &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       io.NopCloser(bytes.NewReader([]byte("OK"))),
+					},
+				},
+			},
+			depends: depends{
+				client: &client{
+					httpClient: &http.Client{
+						Transport: RoundTripper(
+							func(req *http.Request) (*http.Response, error) {
+								return &http.Response{
+									StatusCode: http.StatusOK,
+									Body:       io.NopCloser(bytes.NewReader([]byte("OK"))),
+								}, nil
+							},
+						),
+					},
+				},
+				header: make(http.Header),
+				query:  make(url.Values),
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			r := request{
+				client: tc.depends.client,
+				header: tc.depends.header,
+				query:  tc.depends.query,
+			}
+
+			res, err := r.Connect(
+				tc.args.ctx,
+				tc.args.url,
+			)
+
+			assert.Equal(t, tc.want.res, res)
+			assert.Equal(t, tc.want.err, err)
+
+		})
+	}
+
+}
+
+func TestRequest_Options(t *testing.T) {
+	type args struct {
+		ctx context.Context
+		url string
+	}
+
+	type want struct {
+		res *Response
+		err error
+	}
+
+	type depends struct {
+		client *client
+		header http.Header
+		query  url.Values
+	}
+
+	type test struct {
+		name    string
+		args    args
+		want    want
+		depends depends
+	}
+
+	tests := []test{
+		{
+			name: "Success response",
+			args: args{
+				ctx: context.Background(),
+				url: "http://localhost:8080",
+			},
+			want: want{
+				res: &Response{
+					Response: &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       io.NopCloser(bytes.NewReader([]byte("OK"))),
+					},
+				},
+			},
+			depends: depends{
+				client: &client{
+					httpClient: &http.Client{
+						Transport: RoundTripper(
+							func(req *http.Request) (*http.Response, error) {
+								return &http.Response{
+									StatusCode: http.StatusOK,
+									Body:       io.NopCloser(bytes.NewReader([]byte("OK"))),
+								}, nil
+							},
+						),
+					},
+				},
+				header: make(http.Header),
+				query:  make(url.Values),
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			r := request{
+				client: tc.depends.client,
+				header: tc.depends.header,
+				query:  tc.depends.query,
+			}
+
+			res, err := r.Options(
+				tc.args.ctx,
+				tc.args.url,
+			)
+
+			assert.Equal(t, tc.want.res, res)
+			assert.Equal(t, tc.want.err, err)
+
+		})
+	}
+
+}
+
+func TestRequest_Trace(t *testing.T) {
+	type args struct {
+		ctx context.Context
+		url string
+	}
+
+	type want struct {
+		res *Response
+		err error
+	}
+
+	type depends struct {
+		client *client
+		header http.Header
+		query  url.Values
+	}
+
+	type test struct {
+		name    string
+		args    args
+		want    want
+		depends depends
+	}
+
+	tests := []test{
+		{
+			name: "Success response",
+			args: args{
+				ctx: context.Background(),
+				url: "http://localhost:8080",
+			},
+			want: want{
+				res: &Response{
+					Response: &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       io.NopCloser(bytes.NewReader([]byte("OK"))),
+					},
+				},
+			},
+			depends: depends{
+				client: &client{
+					httpClient: &http.Client{
+						Transport: RoundTripper(
+							func(req *http.Request) (*http.Response, error) {
+								return &http.Response{
+									StatusCode: http.StatusOK,
+									Body:       io.NopCloser(bytes.NewReader([]byte("OK"))),
+								}, nil
+							},
+						),
+					},
+				},
+				header: make(http.Header),
+				query:  make(url.Values),
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			r := request{
+				client: tc.depends.client,
+				header: tc.depends.header,
+				query:  tc.depends.query,
+			}
+
+			res, err := r.Trace(
+				tc.args.ctx,
+				tc.args.url,
+			)
+
+			assert.Equal(t, tc.want.res, res)
+			assert.Equal(t, tc.want.err, err)
+
+		})
+	}
+
+}
+
+func TestRequest_Patch(t *testing.T) {
+	type args struct {
+		ctx context.Context
+		url string
+	}
+
+	type want struct {
+		res *Response
+		err error
+	}
+
+	type depends struct {
+		client *client
+		header http.Header
+		query  url.Values
+	}
+
+	type test struct {
+		name    string
+		args    args
+		want    want
+		depends depends
+	}
+
+	tests := []test{
+		{
+			name: "Success response",
+			args: args{
+				ctx: context.Background(),
+				url: "http://localhost:8080",
+			},
+			want: want{
+				res: &Response{
+					Response: &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       io.NopCloser(bytes.NewReader([]byte("OK"))),
+					},
+				},
+			},
+			depends: depends{
+				client: &client{
+					httpClient: &http.Client{
+						Transport: RoundTripper(
+							func(req *http.Request) (*http.Response, error) {
+								return &http.Response{
+									StatusCode: http.StatusOK,
+									Body:       io.NopCloser(bytes.NewReader([]byte("OK"))),
+								}, nil
+							},
+						),
+					},
+				},
+				header: make(http.Header),
+				query:  make(url.Values),
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			r := request{
+				client: tc.depends.client,
+				header: tc.depends.header,
+				query:  tc.depends.query,
+			}
+
+			res, err := r.Patch(
+				tc.args.ctx,
+				tc.args.url,
+			)
+
+			assert.Equal(t, tc.want.res, res)
+			assert.Equal(t, tc.want.err, err)
+
+		})
+	}
+}
 
 func TestRequest_URL(t *testing.T) {
 	type want struct {
