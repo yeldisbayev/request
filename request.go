@@ -168,6 +168,8 @@ func (r *request) do(
 	req.Header = r.header
 	req.URL.RawQuery = r.query.Encode()
 
+	r.httpReq = req
+
 	res, err := r.client.httpClient.Do(req)
 	if err != nil {
 		return nil, err
