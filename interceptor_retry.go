@@ -11,14 +11,20 @@ import (
 
 const maxRetries = 3
 
-var defaultStatusCodes = []int{
+var defaultRetryOnStatusCodes = []int{
+	http.StatusRequestTimeout,
+	http.StatusTooEarly,
 	http.StatusTooManyRequests,
+	http.StatusBadGateway,
 	http.StatusServiceUnavailable,
 	http.StatusGatewayTimeout,
 }
 
+// Retry interceptor retry request on request failure
+// or on defined Response status codes.
+// By default Retry uses defaultRetryOnStatusCodes
 func Retry(retryOnStatusCodes ...int) Interceptor {
-	statusCodes := defaultStatusCodes
+	statusCodes := defaultRetryOnStatusCodes
 
 	if len(retryOnStatusCodes) != 0 {
 		statusCodes = retryOnStatusCodes
@@ -64,10 +70,13 @@ func Retry(retryOnStatusCodes ...int) Interceptor {
 	}
 }
 
+// delay calculates Retry duration
 func delay(retries int) time.Duration {
 	return time.Duration(math.Pow(2, float64(retries))) * time.Second
 }
 
+// shouldRetry determine conditions to Retry interceptor
+// by including Response status code
 func shouldRetry(res *http.Response, err error, statusCodes []int) bool {
 	if err != nil {
 		return true
@@ -81,6 +90,8 @@ func shouldRetry(res *http.Response, err error, statusCodes []int) bool {
 
 }
 
+// sleepWithContext delays Retry interceptor
+// considering its context and duration
 func sleepWithContext(ctx context.Context, d time.Duration) {
 	timer := time.NewTimer(d)
 
@@ -94,6 +105,8 @@ func sleepWithContext(ctx context.Context, d time.Duration) {
 
 }
 
+// drainBody drain http.Response body
+// to reuse same connection
 func drainBody(res *http.Response) {
 	if res != nil && res.Body != nil {
 		_, _ = io.Copy(io.Discard, res.Body)
