@@ -111,12 +111,12 @@ func WithMaxConnectionsPerHost(maxConnectionsPerHost int) func(*client) {
 
 }
 
-// WithMaxOpenIdleConnectionsPerHost controls the maximum idle
+// WithMaxIdleConnectionsPerHost controls the maximum idle
 // (keep-alive) connections to keep per-host.
 // If not provided, DefaultMaxIdleConnectionsPerHost is used.
-func WithMaxOpenIdleConnectionsPerHost(maxOpenIdleConnections int) func(*client) {
+func WithMaxIdleConnectionsPerHost(maxIdleConnectionsPerHost int) func(*client) {
 	return func(c *client) {
-		c.maxIdleConnectionsPerHost = maxOpenIdleConnections
+		c.maxIdleConnectionsPerHost = maxIdleConnectionsPerHost
 	}
 
 }
