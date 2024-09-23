@@ -11,7 +11,7 @@ import (
 
 const maxRetries = 3
 
-var defaultRetryOnStatusCodes = []int{
+var defaultStatusCodes = []int{
 	http.StatusRequestTimeout,
 	http.StatusTooEarly,
 	http.StatusTooManyRequests,
@@ -22,12 +22,12 @@ var defaultRetryOnStatusCodes = []int{
 
 // Retry interceptor retry request on request failure
 // or on defined Response status codes.
-// By default Retry uses defaultRetryOnStatusCodes
-func Retry(retryOnStatusCodes ...int) Interceptor {
-	statusCodes := defaultRetryOnStatusCodes
+// By default Retry uses defaultStatusCodes
+func Retry(statusCodes ...int) Interceptor {
+	retryStatusCodes := defaultStatusCodes
 
-	if len(retryOnStatusCodes) != 0 {
-		statusCodes = retryOnStatusCodes
+	if len(statusCodes) != 0 {
+		retryStatusCodes = statusCodes
 	}
 
 	return func(tripper http.RoundTripper) http.RoundTripper {
@@ -43,7 +43,7 @@ func Retry(retryOnStatusCodes ...int) Interceptor {
 
 				defer func() {
 					retries := 0
-					for shouldRetry(res, err, statusCodes) && retries < maxRetries {
+					for shouldRetry(res, err, retryStatusCodes) && retries < maxRetries {
 						if retries != 0 {
 							sleepWithContext(
 								req.Context(),
