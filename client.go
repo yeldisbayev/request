@@ -136,10 +136,13 @@ func WithForceAttemptHTTP2(forceAttemptHTTP2 bool) func(*client) {
 // WithInterceptors wraps Client with given interceptors
 func WithInterceptors(interceptors ...Interceptor) func(*client) {
 	return func(c *client) {
-		for _, interceptor := range interceptors {
+		for i := range interceptors {
+			interceptor := interceptors[len(interceptors)-1-i]
+
 			c.httpClient.Transport = interceptor(
 				c.httpClient.Transport,
 			)
+
 		}
 	}
 

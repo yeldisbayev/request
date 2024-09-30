@@ -41,29 +41,27 @@ func Retry(statusCodes ...int) Interceptor {
 					}
 				}
 
-				defer func() {
-					retries := 0
-					for shouldRetry(res, err, retryStatusCodes) && retries < maxRetries {
-						if retries != 0 {
-							sleepWithContext(
-								req.Context(),
-								delay(retries),
-							)
-						}
-
-						drainBody(res)
-
-						if req.Body != nil {
-							req.Body = body
-						}
-
-						res, err = tripper.RoundTrip(req)
-						retries++
-
+				retries := 0
+				for shouldRetry(res, err, retryStatusCodes) && retries < maxRetries {
+					if retries != 0 {
+						sleepWithContext(
+							req.Context(),
+							delay(retries),
+						)
 					}
-				}()
 
-				return tripper.RoundTrip(req)
+					drainBody(res)
+
+					if req.Body != nil {
+						req.Body = body
+					}
+
+					res, err = tripper.RoundTrip(req)
+					retries++
+
+				}
+
+				return res, err
 
 			},
 		)
