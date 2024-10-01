@@ -161,7 +161,7 @@ func FirstInterceptor(rt http.RoundTripper) http.RoundTripper {
 			res, err = rt.RoundTrip(req)
             
 			// After request completed
-			log.Println("First Interceptor finished")
+			log.Println("FirstInterceptor finished")
 
 			return res, err
 
@@ -232,7 +232,7 @@ func main() {
  
  SecondInterceptor finished
  
- First Interceptor finished
+ FirstInterceptor finished
  
  {1 1 delectus aut autem false}
 ```
