@@ -67,8 +67,7 @@ There is Options to set up Client
 
 #### [WithTimeout](https://github.com/yeldisbayev/req/blob/48f91285a13c6e2ed3afd768bc3692996af9e62b/client.go#L77)
 
-Sets timeout for all client requests. Timeout implemented without using http.Client's Timeout property, but with context.\
-Client timeout has lesser priority than Request timeout property. If not provided, DefaultTimeout is used.
+Sets timeout for all client requests. Timeout implemented without using http.Client's Timeout property, but with context. Client timeout has lesser priority than Request timeout property. If not provided, [DefaultTimeout](https://github.com/yeldisbayev/req/blob/89f395aca69a4a1ddb28fe08951ceff807238c2f/client.go#L10C2-L10C16) is used.
 
 ```go
 timeout := time.Second * 5
@@ -78,8 +77,7 @@ client := req.NewClient(req.WithTimeout(timeout))
 
 #### [WithIdleConnectionTimeout](https://github.com/yeldisbayev/req/blob/48f91285a13c6e2ed3afd768bc3692996af9e62b/client.go#L87)
 
-Controls amount of time an idle (keep-alive) connection will remain idle before closing itself. \
-If not provided, DefaultIdleConnectionTimeout is used.
+Controls amount of time an idle (keep-alive) connection will remain idle before closing itself. If not provided, [DefaultIdleConnectionTimeout](https://github.com/yeldisbayev/req/blob/89f395aca69a4a1ddb28fe08951ceff807238c2f/client.go#L11C2-L11C30) is used.
 
 ```go
 idleConnectionTimeout := time.Second * 30
@@ -89,8 +87,7 @@ client := req.NewClient(req.WithIdleConnectionTimeout(idleConnectionTimeout))
 
 #### [WithMaxIdleConnections](https://github.com/yeldisbayev/req/blob/48f91285a13c6e2ed3afd768bc3692996af9e62b/client.go#L96)
 
-Controls the maximum number of idle (keep-alive) connections across all hosts.\
-If not provided, DefaultMaxIdleConnections is used.
+Controls the maximum number of idle (keep-alive) connections across all hosts. If not provided, [DefaultMaxIdleConnections](https://github.com/yeldisbayev/req/blob/89f395aca69a4a1ddb28fe08951ceff807238c2f/client.go#L12) is used.
 
 ```go
 maxIdleConnections := 20
@@ -100,8 +97,7 @@ client := req.NewClient(req.WithMaxIdleConnections(maxIdleConnections))
 
 #### [WithMaxConnectionsPerHost](https://github.com/yeldisbayev/req/blob/48f91285a13c6e2ed3afd768bc3692996af9e62b/client.go#L107)
 
-Optionally limits the total number of connections per host, including connections in the dialing, active, and idle states. On limit violation, dials will block.\
-If not provided, DefaultMaxConnectionsPerHost is used.
+Optionally limits the total number of connections per host, including connections in the dialing, active, and idle states. On limit violation, dials will block. If not provided, [DefaultMaxConnectionsPerHost](https://github.com/yeldisbayev/req/blob/89f395aca69a4a1ddb28fe08951ceff807238c2f/client.go#L13) is used.
 
 ```go
 maxConnectionsPerHost := 30
@@ -111,8 +107,7 @@ client := req.NewClient(req.WithMaxConnectionsPerHost(maxConnectionsPerHost))
 
 #### [WithMaxIdleConnectionsPerHost](https://github.com/yeldisbayev/req/blob/48f91285a13c6e2ed3afd768bc3692996af9e62b/client.go#L117)
 
-Controls the maximum idle (keep-alive) connections to keep per-host.\
-If not provided, DefaultMaxIdleConnectionsPerHost is used.
+Controls the maximum idle (keep-alive) connections to keep per-host. If not provided, [DefaultMaxIdleConnectionsPerHost](https://github.com/yeldisbayev/req/blob/89f395aca69a4a1ddb28fe08951ceff807238c2f/client.go#L14) is used.
 
 ```go
 maxIdleConnectionsPerHost := 30
@@ -122,10 +117,7 @@ client := req.NewClient(req.WithMaxIdleConnectionsPerHost(maxIdleConnectionsPerH
 
 #### [WithForceAttemptHTTP2](https://github.com/yeldisbayev/req/blob/48f91285a13c6e2ed3afd768bc3692996af9e62b/client.go#L129)
 
-Controls whether HTTP/2 is enabled when a non-zero Dial, DialTLS, or DialContext func or TLSClientConfig is provided.\
-By default, use of any those fields conservatively disables HTTP/2. To use a custom dialer or TLS config and still attempt HTTP/2
-upgrades, set this to true.\
-If not provided, DefaultForceAttemptHTTP2 is used.
+Controls whether HTTP/2 is enabled when a non-zero Dial, DialTLS, or DialContext func or TLSClientConfig is provided. By default, use of any those fields conservatively disables HTTP/2. To use a custom dialer or TLS config and still attempt HTTP/2 upgrades, set this to true. If not provided, [DefaultForceAttemptHTTP2](https://github.com/yeldisbayev/req/blob/89f395aca69a4a1ddb28fe08951ceff807238c2f/client.go#L15) is used.
 
 ```go
 forceAttemptHTTP2 := true
