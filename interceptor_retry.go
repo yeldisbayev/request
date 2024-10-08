@@ -41,6 +41,7 @@ func Retry(statusCodes ...int) Interceptor {
 					}
 				}
 
+				res, err = tripper.RoundTrip(req)
 				retries := 0
 				for shouldRetry(res, err, retryStatusCodes) && retries < maxRetries {
 					if retries != 0 {
