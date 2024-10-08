@@ -1303,7 +1303,7 @@ func TestRequest_WithJSONContentType(t *testing.T) {
 			want: want{
 				req: &request{
 					header: http.Header{
-						http.CanonicalHeaderKey(ContentType): {"application/json; charset=utf-8"},
+						http.CanonicalHeaderKey(ContentType): {"application/json"},
 					},
 				},
 			},
@@ -1316,13 +1316,13 @@ func TestRequest_WithJSONContentType(t *testing.T) {
 			want: want{
 				req: &request{
 					header: http.Header{
-						http.CanonicalHeaderKey(ContentType): {"application/json; charset=utf-8"},
+						http.CanonicalHeaderKey(ContentType): {"application/json"},
 					},
 				},
 			},
 			depends: depends{
 				headers: http.Header{
-					http.CanonicalHeaderKey(ContentType): {"application/xml; charset=utf-8"},
+					http.CanonicalHeaderKey(ContentType): {"application/xml"},
 				},
 			},
 		},
@@ -1366,7 +1366,7 @@ func TestRequest_WithXMLContentType(t *testing.T) {
 			want: want{
 				req: &request{
 					header: http.Header{
-						http.CanonicalHeaderKey(ContentType): {"application/xml; charset=utf-8"},
+						http.CanonicalHeaderKey(ContentType): {"application/xml"},
 					},
 				},
 			},
@@ -1379,13 +1379,13 @@ func TestRequest_WithXMLContentType(t *testing.T) {
 			want: want{
 				req: &request{
 					header: http.Header{
-						http.CanonicalHeaderKey(ContentType): {"application/xml; charset=utf-8"},
+						http.CanonicalHeaderKey(ContentType): {"application/xml"},
 					},
 				},
 			},
 			depends: depends{
 				headers: http.Header{
-					http.CanonicalHeaderKey(ContentType): {"application/json; charset=utf-8"},
+					http.CanonicalHeaderKey(ContentType): {"application/json"},
 				},
 			},
 		},

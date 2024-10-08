@@ -13,8 +13,8 @@ import (
 
 const (
 	ContentType               = "Content-Type"
-	ApplicationJSON           = "application/json; charset=utf-8"
-	ApplicationXML            = "application/xml; charset=utf-8"
+	ApplicationJSON           = "application/json"
+	ApplicationXML            = "application/xml"
 	ApplicationFormUrlencoded = "application/x-www-form-urlencoded"
 	MultipartFormData         = "multipart/form-data"
 
