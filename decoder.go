@@ -1,4 +1,4 @@
-package req
+package request
 
 type Decoder interface {
 	Decode(interface{}) error

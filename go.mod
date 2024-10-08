@@ -1,4 +1,4 @@
-module req
+module request
 
 go 1.22
 
