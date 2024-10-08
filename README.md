@@ -40,9 +40,8 @@ func main() {
 
 	var todo Todo
 
-	if res.Success() {
-		decoder := json.NewDecoder(res.Body)
-		if err := decoder.Decode(&todo); err != nil {
+	if res.IsSuccess() {
+		if err := res.Decoder().Decode(&todo); err != nil {
 			log.Fatalf("Decode error: %v", err)
 		}
 	}
@@ -211,9 +210,8 @@ func main() {
 
 	var todo Todo
 
-	if res.Success() {
-		decoder := json.NewDecoder(res.Body)
-		if err := decoder.Decode(&todo); err != nil {
+	if res.IsSuccess() {
+		if err := res.Decoder().Decode(&todo); err != nil {
 			log.Fatalf("Decode error: %v", err)
 		}
 	}
