@@ -1,6 +1,6 @@
-## What is Req
+## What is Request
 
-Req is golang enhanced http client
+Request is golang enhanced http client
 
 ## Installation
 
