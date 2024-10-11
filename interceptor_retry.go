@@ -41,8 +41,9 @@ func Retry(statusCodes ...int) Interceptor {
 					}
 				}
 
-				res, err = tripper.RoundTrip(req)
 				retries := 0
+
+				res, err = tripper.RoundTrip(req)
 				for shouldRetry(res, err, retryStatusCodes) && retries < maxRetries {
 					if retries != 0 {
 						sleepWithContext(

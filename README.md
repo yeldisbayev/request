@@ -14,8 +14,10 @@ $ go get -u github.com/yeldisbayev/req
 package main
 
 import (
-	"encoding/json"
+	"context"
+	"io"
 	"log"
+	"request"
 )
 
 type Todo struct {
@@ -26,8 +28,7 @@ type Todo struct {
 }
 
 func main() {
-	
-	client := req.NewClient()
+	client := request.NewClient()
 
 	res, err := client.Request().Get(context.Background(), "https://jsonplaceholder.typicode.com/todos/1")
 	if err != nil {
@@ -71,7 +72,7 @@ Sets timeout for all client requests. Timeout implemented without using http.Cli
 ```go
 timeout := time.Second * 5
 
-client := req.NewClient(req.WithTimeout(timeout))
+client := request.NewClient(request.WithTimeout(timeout))
 ```
 
 #### WithIdleConnectionTimeout
@@ -81,7 +82,7 @@ Controls amount of time an idle (keep-alive) connection will remain idle before 
 ```go
 idleConnectionTimeout := time.Second * 30
 
-client := req.NewClient(req.WithIdleConnectionTimeout(idleConnectionTimeout))
+client := request.NewClient(request.WithIdleConnectionTimeout(idleConnectionTimeout))
 ```
 
 #### WithMaxIdleConnections
@@ -91,7 +92,7 @@ Controls the maximum number of idle (keep-alive) connections across all hosts. I
 ```go
 maxIdleConnections := 20
 
-client := req.NewClient(req.WithMaxIdleConnections(maxIdleConnections))
+client := request.NewClient(request.WithMaxIdleConnections(maxIdleConnections))
 ```
 
 #### WithMaxConnectionsPerHost
@@ -101,7 +102,7 @@ Optionally limits the total number of connections per host, including connection
 ```go
 maxConnectionsPerHost := 30
 
-client := req.NewClient(req.WithMaxConnectionsPerHost(maxConnectionsPerHost))
+client := request.NewClient(request.WithMaxConnectionsPerHost(maxConnectionsPerHost))
 ```
 
 #### WithMaxIdleConnectionsPerHost
@@ -111,7 +112,7 @@ Controls the maximum idle (keep-alive) connections to keep per-host. If not prov
 ```go
 maxIdleConnectionsPerHost := 30
 
-client := req.NewClient(req.WithMaxIdleConnectionsPerHost(maxIdleConnectionsPerHost))
+client := request.NewClient(request.WithMaxIdleConnectionsPerHost(maxIdleConnectionsPerHost))
 ```
 
 #### WithForceAttemptHTTP2
@@ -121,7 +122,7 @@ Controls whether HTTP/2 is enabled when a non-zero Dial, DialTLS, or DialContext
 ```go
 forceAttemptHTTP2 := true
 
-client := req.NewClient(req.WithForceAttemptHTTP2(forceAttemptHTTP2))
+client := request.NewClient(request.WithForceAttemptHTTP2(forceAttemptHTTP2))
 ```
 
 #### WithInterceptors
@@ -129,9 +130,9 @@ client := req.NewClient(req.WithForceAttemptHTTP2(forceAttemptHTTP2))
 Wraps Client with given [interceptors](https://github.com/yeldisbayev/req/blob/48f91285a13c6e2ed3afd768bc3692996af9e62b/interceptor.go#L5)
 
 ```go
-retry := req.Retry()
+retry := request.Retry()
 
-client := req.NewClient(req.WithInterceptors(retry))
+client := request.NewClient(request.WithInterceptors(retry))
 ```
 
 ## Interceptor
@@ -143,11 +144,10 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"io"
 	"log"
 	"net/http"
-	"req"
+	"request"
 	"time"
 )
 
@@ -195,8 +195,8 @@ type Todo struct {
 }
 
 func main() {
-	client := req.NewClient(
-		req.WithInterceptors(FirstInterceptor, SecondInterceptor), 
+	client := request.NewClient(
+		request.WithInterceptors(FirstInterceptor, SecondInterceptor), 
 	)
 
 	res, err := client.Request().Get(context.Background(), "https://jsonplaceholder.typicode.com/todos/1")
