@@ -3,12 +3,17 @@ package request
 import (
 	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"io"
 	"maps"
 	"net/http"
 	"net/url"
 	"time"
+)
+
+var (
+	ErrNoBody = errors.New("no body")
 )
 
 const (
@@ -76,7 +81,7 @@ type Request interface {
 
 	Header() http.Header
 
-	Body() io.Reader
+	Body() (io.Reader, error)
 
 	WithHeader(
 		key string,
@@ -181,6 +186,7 @@ func (r *request) do(
 
 }
 
+// Get method does GET HTTP request.
 func (r *request) Get(
 	ctx context.Context,
 	url string,
@@ -194,6 +200,7 @@ func (r *request) Get(
 
 }
 
+// Head method does HEAD HTTP request.
 func (r *request) Head(
 	ctx context.Context,
 	url string,
@@ -207,6 +214,7 @@ func (r *request) Head(
 
 }
 
+// Post method does POST HTTP request.
 func (r *request) Post(
 	ctx context.Context,
 	url string,
@@ -221,6 +229,7 @@ func (r *request) Post(
 
 }
 
+// Put method does PUT HTTP request.
 func (r *request) Put(
 	ctx context.Context,
 	url string,
@@ -235,6 +244,7 @@ func (r *request) Put(
 
 }
 
+// Delete method does DELETE HTTP request.
 func (r *request) Delete(
 	ctx context.Context,
 	url string,
@@ -248,6 +258,7 @@ func (r *request) Delete(
 
 }
 
+// Connect method does CONNECT HTTP request.
 func (r *request) Connect(
 	ctx context.Context,
 	url string,
@@ -261,6 +272,7 @@ func (r *request) Connect(
 
 }
 
+// Options method does OPTIONS HTTP request.
 func (r *request) Options(
 	ctx context.Context,
 	url string,
@@ -274,6 +286,7 @@ func (r *request) Options(
 
 }
 
+// Trace method does TRACE HTTP request.
 func (r *request) Trace(
 	ctx context.Context,
 	url string,
@@ -287,6 +300,7 @@ func (r *request) Trace(
 
 }
 
+// Patch method does PATCH HTTP request.
 func (r *request) Patch(
 	ctx context.Context,
 	url string,
@@ -300,6 +314,7 @@ func (r *request) Patch(
 
 }
 
+// URL returns request URL.
 func (r *request) URL() *url.URL {
 	if r.httpReq != nil {
 		return r.httpReq.URL
@@ -308,6 +323,7 @@ func (r *request) URL() *url.URL {
 	return nil
 }
 
+// Header returns request HEADER.
 func (r *request) Header() http.Header {
 	if r.httpReq != nil {
 		return r.httpReq.Header
@@ -317,15 +333,16 @@ func (r *request) Header() http.Header {
 
 }
 
-func (r *request) Body() io.Reader {
+// Body returns request BODY copy.
+func (r *request) Body() (io.Reader, error) {
 	if r.httpReq != nil {
-		return r.httpReq.Body
+		return r.httpReq.GetBody()
 	}
 
-	return nil
-
+	return nil, ErrNoBody
 }
 
+// WithHeader adds given HEADER values by key.
 func (r *request) WithHeader(
 	key string,
 	values ...string,
@@ -338,6 +355,7 @@ func (r *request) WithHeader(
 
 }
 
+// WithHeaders sets HEADER.
 func (r *request) WithHeaders(
 	values map[string][]string,
 ) Request {
@@ -347,6 +365,7 @@ func (r *request) WithHeaders(
 
 }
 
+// WithContentType sets content type HEADER.
 func (r *request) WithContentType(
 	value string,
 ) Request {
@@ -359,6 +378,7 @@ func (r *request) WithContentType(
 
 }
 
+// WithJSONContentType sets application/json content type HEADER.
 func (r *request) WithJSONContentType() Request {
 	r.header.Set(
 		ContentType,
@@ -369,6 +389,7 @@ func (r *request) WithJSONContentType() Request {
 
 }
 
+// WithXMLContentType sets application/xml content type HEADER.
 func (r *request) WithXMLContentType() Request {
 	r.header.Set(
 		ContentType,
@@ -379,6 +400,7 @@ func (r *request) WithXMLContentType() Request {
 
 }
 
+// WithFormContentType sets application/x-www-form-urlencoded content type HEADER.
 func (r *request) WithFormContentType() Request {
 	r.header.Set(
 		ContentType,
@@ -389,6 +411,7 @@ func (r *request) WithFormContentType() Request {
 
 }
 
+// WithMultipartFormContentType sets multipart/form-data content type HEADER.
 func (r *request) WithMultipartFormContentType() Request {
 	r.header.Set(
 		ContentType,
@@ -399,6 +422,7 @@ func (r *request) WithMultipartFormContentType() Request {
 
 }
 
+// WithAuth adds given values to authorization HEADER.
 func (r *request) WithAuth(
 	values ...string,
 ) Request {
@@ -410,6 +434,7 @@ func (r *request) WithAuth(
 
 }
 
+// WithBasicAuth adds Basic authorization HEADER.
 func (r *request) WithBasicAuth(
 	username,
 	password string,
@@ -428,6 +453,7 @@ func (r *request) WithBasicAuth(
 
 }
 
+// WithBearerAuth adds Bearers authorization HEADER.
 func (r *request) WithBearerAuth(
 	value string,
 ) Request {
@@ -444,6 +470,7 @@ func (r *request) WithBearerAuth(
 
 }
 
+// WithJWTAuth adds JWT authorization HEADER.
 func (r *request) WithJWTAuth(
 	value string,
 ) Request {
@@ -460,6 +487,7 @@ func (r *request) WithJWTAuth(
 
 }
 
+// WithQuery adds given query parameter values by name.
 func (r *request) WithQuery(
 	name string,
 	values ...any,
@@ -478,6 +506,7 @@ func (r *request) WithQuery(
 
 }
 
+// WithQueries adds given query parameters.
 func (r *request) WithQueries(
 	values map[string][]string,
 ) Request {
@@ -487,6 +516,8 @@ func (r *request) WithQueries(
 
 }
 
+// WithTimeout sets request timeout and implemented with context.Context.
+// Request timeout has higher priority than Client's timeout
 func (r *request) WithTimeout(
 	timeout time.Duration,
 ) Request {
