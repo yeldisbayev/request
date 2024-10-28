@@ -1,6 +1,8 @@
-## What is Request
-
-Request is golang enhanced http client
+<p align="center">
+  <a href="https://github.com/yeldisbayev/request">
+    <img alt="go-http-client" src="assets/banner.svg" width="200">
+  </a>
+</p>
 
 ## Installation
 
