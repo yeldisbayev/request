@@ -123,7 +123,7 @@ type Request interface {
 
 	WithQuery(
 		name string,
-		values ...any,
+		values ...string,
 	) Request
 
 	WithQueries(
@@ -490,18 +490,9 @@ func (r *request) WithJWTAuth(
 // WithQuery adds given query parameter values by name.
 func (r *request) WithQuery(
 	name string,
-	values ...any,
+	values ...string,
 ) Request {
-	for _, value := range values {
-		r.query.Add(
-			name,
-			fmt.Sprintf(
-				"%v",
-				value,
-			),
-		)
-	}
-
+	r.query[name] = append(r.query[name], values...)
 	return r
 
 }
