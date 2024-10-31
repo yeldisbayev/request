@@ -1,4 +1,4 @@
-module request
+module github.com/yeldisbayev/request
 
 go 1.22
 
