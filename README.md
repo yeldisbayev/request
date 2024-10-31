@@ -7,7 +7,7 @@
 ## Installation
 
 ```
-$ go get -u github.com/yeldisbayev/req
+$ go get -u github.com/yeldisbayev/request
 ```
 
 ## Example usage
